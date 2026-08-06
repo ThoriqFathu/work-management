@@ -6,12 +6,14 @@ use App\Models\Priority;
 use App\Models\Status;
 use App\Models\TaskLog;
 use App\Models\WorkRequest;
+use App\Services\ActivityLog\ActivityLogService;
 
 class WorkRequestService
 {
 
     public function __construct(
-        protected TaskLogService $taskLogService
+        protected TaskLogService $taskLogService,
+        protected ActivityLogService $activityLogService
     ) {
     }
     public function paginate(array $filter = [])
@@ -79,10 +81,16 @@ class WorkRequestService
 
         $workRequest = WorkRequest::create($data);
 
-        $this->taskLogService->add(
-            $workRequest,
-            'Membuat Work Request'
+        $this->activityLogService->log(
+
+            subject: $workRequest,
+
+            action: 'created',
+
+            description: 'Membuat Work Request',
+
         );
+
 
         return $workRequest;
     }
@@ -92,11 +100,35 @@ class WorkRequestService
         array $data
     )
     {
+        $old = $workRequest->only([
+            'judul',
+            'deskripsi',
+            'priority_id',
+            'status_id',
+            'category_id',
+            'unit_kerja_id',
+        ]);
         $workRequest->update($data);
 
-        $this->taskLogService->add(
-            $workRequest,
-            'Mengubah Work Request'
+        $this->activityLogService->log(
+
+            subject: $workRequest,
+
+            action: 'updated',
+
+            description: 'Mengubah Work Request',
+
+            old: $old,
+
+            new: $workRequest->only([
+                'judul',
+                'deskripsi',
+                'priority_id',
+                'status_id',
+                'category_id',
+                'unit_kerja_id',
+            ]),
+
         );
 
         return $workRequest;
@@ -109,22 +141,37 @@ class WorkRequestService
 
         $status = Status::findOrFail($statusId);
 
+        $oldStatus = $workRequest->status;
+
         $workRequest->update([
             'status_id' => $status->id,
         ]);
 
-        $this->taskLogService->add(
-            $workRequest,
-            'Mengubah status menjadi '.$status->nama
+        $this->activityLogService->log(
+            subject: $workRequest,
+            action: 'status_changed',
+            description: "Status {$oldStatus->nama} → {$status->nama}",
+            old: [
+                'status_id' => $oldStatus->id,
+            ],
+            new: [
+                'status_id' => $status->id,
+            ]
         );
+
     }
     public function delete(
         WorkRequest $workRequest
     ): void {
 
-        $this->taskLogService->add(
-            $workRequest,
-            'Menghapus Work Request'
+        $this->activityLogService->log(
+
+            subject: $workRequest,
+
+            action: 'deleted',
+
+            description: 'Menghapus Work Request',
+
         );
 
         $workRequest->delete();

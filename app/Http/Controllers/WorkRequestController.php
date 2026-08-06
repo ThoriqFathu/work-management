@@ -10,8 +10,11 @@ use App\Models\RequesterUnit;
 use App\Models\Status;
 use App\Models\UnitKerja;
 use App\Models\WorkRequest;
+use App\Models\WorkSession;
+use App\Services\ActivityLog\GetActivityTimelineService;
 use App\Services\UnitKerjaService;
 use App\Services\WorkRequestService;
+use App\Services\WorkSession\SessionCalculatorService;
 use Illuminate\Http\Request;
 
 class WorkRequestController extends Controller
@@ -84,24 +87,71 @@ class WorkRequestController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function show(WorkRequest $workRequest)
+    public function show(
+        WorkRequest $workRequest, 
+        SessionCalculatorService $calculator,
+        GetActivityTimelineService $timelineService,    
+    )
     {
+        // $workRequest->load([
+        //     'unitKerja',
+        //     'requesterUnit',
+        //     'category',
+        //     'priority',
+        //     'status',
+        //     'comments',
+        //     'files',
+        //     'logs',
+        // ]);
+
         $workRequest->load([
+
             'unitKerja',
             'requesterUnit',
             'category',
             'priority',
             'status',
-            'comments',
-            'files',
-            'logs',
+
+            'logs.user',
+
+            'workSessions' => function ($query) {
+
+                $query->latest('started_at')
+                    ->with('user');
+
+            },
+
         ]);
+
+        $totalDuration = $calculator->totalHours($workRequest);
+
+        $activeSession = WorkSession::query()
+            ->where('user_id', auth()->id())
+            ->whereNull('ended_at')
+            ->first();
+
+        $timeline = $timelineService->execute(
+            $workRequest
+        );
 
         return view(
             'work-request.show',
             [
                 'workRequest' => $workRequest,
                 'statuses' => $this->service->availableStatuses($workRequest),
+                'workSessions' => function ($query) {
+
+                    $query
+                        ->with([
+                            'user',
+                            'outputs'
+                        ])
+                        ->latest('started_at');
+
+                },
+                'totalDuration' => $totalDuration,
+                'activeSession' => $activeSession,
+                'timeline'      => $timeline,
             ]
         );
     }

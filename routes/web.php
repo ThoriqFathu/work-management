@@ -9,6 +9,8 @@ use App\Http\Controllers\Master\StatusController;
 use App\Http\Controllers\Master\UnitKerjaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WorkRequestController;
+use App\Http\Controllers\WorkSessionController;
+use App\Http\Controllers\WorkSessionOutputController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -55,6 +57,26 @@ Route::middleware(['auth'])->group(function () {
         'work-request/{workRequest}/change-status',
         [WorkRequestController::class, 'changeStatus']
     )->name('work-request.change-status');
+
+    Route::post(
+        '/work-request/{workRequest}/start',
+        [WorkSessionController::class, 'start']
+    )->name('work-session.start');
+
+    Route::patch(
+        '/work-session/{workSession}/stop',
+        [WorkSessionController::class, 'stop']
+    )->name('work-session.stop');
+
+    Route::post(
+        '/work-session/{workSession}/outputs',
+        [WorkSessionOutputController::class, 'store']
+    )->name('work-session-output.store');
+
+    Route::delete(
+        '/work-session-output/{workSessionOutput}',
+        [WorkSessionOutputController::class, 'destroy']
+    )->name('work-session-output.destroy');
 });
 
 require __DIR__.'/auth.php';

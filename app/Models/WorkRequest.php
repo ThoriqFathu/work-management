@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasActivityLogs;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class WorkRequest extends Model
 {
     use SoftDeletes;
+    use HasActivityLogs;
 
     protected $fillable = [
         'kode',
@@ -38,6 +40,20 @@ class WorkRequest extends Model
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
     ];
+
+
+    public function workSessions(): HasMany
+    {
+        return $this->hasMany(WorkSession::class)
+            ->latest('started_at');
+    }
+
+    public function activeWorkSession()
+    {
+        return $this->hasOne(WorkSession::class)
+            ->whereNull('ended_at')
+            ->latest('started_at');
+    }
 
     public function unitKerja(): BelongsTo
     {

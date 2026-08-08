@@ -21,10 +21,21 @@ class AppServiceProvider extends ServiceProvider
         ], 'telegram.commands');
 
         $this->app->singleton(
+            \App\Services\Telegram\Commands\TelegramCommandRegistry::class,
+            function ($app) {
+                return new \App\Services\Telegram\Commands\TelegramCommandRegistry(
+                    $app->tagged('telegram.commands')
+                );
+            }
+        );
+
+        $this->app->singleton(
             \App\Services\Telegram\Commands\TelegramCommandRouter::class,
             function ($app) {
                 return new \App\Services\Telegram\Commands\TelegramCommandRouter(
-                    $app->tagged('telegram.commands')
+                    $app->make(
+                        \App\Services\Telegram\Commands\TelegramCommandRegistry::class
+                    )
                 );
             }
         );

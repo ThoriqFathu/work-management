@@ -15,7 +15,6 @@ class WorkSessionOutputController extends Controller
         WorkSession $workSession,
         StoreWorkSessionOutputService $service
     ) {
-
         $service->execute(
             $workSession,
             $request->validated()

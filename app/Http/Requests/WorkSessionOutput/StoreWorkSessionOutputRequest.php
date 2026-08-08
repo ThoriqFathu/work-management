@@ -57,39 +57,41 @@ class StoreWorkSessionOutputRequest extends FormRequest
 
     public function withValidator($validator)
     {
+        // dd([
+        //     'all' => $this->all(),
+        //     'content' => $this->input('content'),
+        //     'tipe' => $this->input('tipe'),
+        // ]);
         $validator->after(function ($validator) {
 
-            if ($this->tipe === 'file' && !$this->hasFile('file')) {
-
+            if (
+                $this->input('tipe') === 'file'
+                && ! $this->hasFile('file')
+            ) {
                 $validator->errors()->add(
                     'file',
                     'File wajib diupload.'
                 );
-
             }
 
             if (
-                $this->tipe === 'link'
-                && blank($this->url)
+                $this->input('tipe') === 'link'
+                && blank($this->input('url'))
             ) {
-
                 $validator->errors()->add(
                     'url',
                     'URL wajib diisi.'
                 );
-
             }
 
             if (
-                $this->tipe === 'text'
-                && blank($this->content)
+                $this->input('tipe') === 'text'
+                && blank($this->input('content'))
             ) {
-
                 $validator->errors()->add(
                     'content',
                     'Isi text wajib diisi.'
                 );
-
             }
 
         });

@@ -9,9 +9,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WorkActivity extends Model
 {
     use HasActivityLogs;
-    
+
     protected $fillable = [
         'user_id',
+        'unit_kerja_id',
         'requester_unit_id',
         'tipe',
         'channel',
@@ -33,5 +34,10 @@ class WorkActivity extends Model
         return $this->belongsTo(
             RequesterUnit::class
         );
+    }
+
+    public function unitKerja()
+    {
+        return $this->belongsTo(UnitKerja::class);
     }
 }

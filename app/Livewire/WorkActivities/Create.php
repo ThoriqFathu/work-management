@@ -3,6 +3,7 @@
 namespace App\Livewire\WorkActivities;
 
 use App\Models\RequesterUnit;
+use App\Models\UnitKerja;
 use App\Services\WorkActivity\CreateWorkActivityService;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -10,6 +11,8 @@ use Livewire\Component;
 class Create extends Component
 {
     public string $tipe = '';
+
+    public ?int $unitKerjaId = null;
 
     public ?int $requesterUnitId = null;
 
@@ -22,6 +25,7 @@ class Create extends Component
     public function save(
         CreateWorkActivityService $service
     ): void {
+        // dd($this->unitKerjaId);
         $validated = $this->validate([
             'tipe' => [
                 'required',
@@ -29,6 +33,10 @@ class Create extends Component
                 'max:50',
             ],
 
+            'unitKerjaId' => [
+                'required',
+                'exists:unit_kerja,id',
+            ],
             'requesterUnitId' => [
                 'nullable',
                 'integer',
@@ -53,18 +61,19 @@ class Create extends Component
                 'max:1000',
             ],
         ]);
-
         $service->execute(
             user: auth()->user(),
             tipe: $validated['tipe'],
             durasiMenit: $validated['durasiMenit'],
             ringkasan: $validated['ringkasan'],
+            unitKerjaId: $validated['unitKerjaId'],
             requesterUnitId: $validated['requesterUnitId'],
             channel: $validated['channel'] ?: null,
         );
 
         $this->reset([
             'tipe',
+            'unitKerjaId',
             'requesterUnitId',
             'channel',
             'durasiMenit',
@@ -82,6 +91,11 @@ class Create extends Component
         return view(
             'livewire.work-activities.create',
             [
+                'unitKerjas' => UnitKerja::query()
+                ->where('aktif', true)
+                ->orderBy('nama')
+                ->get(),
+
                 'requesterUnits' => RequesterUnit::query()
                     ->where('aktif', true)
                     ->orderBy('nama')

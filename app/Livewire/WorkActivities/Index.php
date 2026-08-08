@@ -3,6 +3,7 @@
 namespace App\Livewire\WorkActivities;
 
 use App\Models\RequesterUnit;
+use App\Models\UnitKerja;
 use App\Models\WorkActivity;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -16,6 +17,8 @@ class Index extends Component
     public string $filterTipe = '';
 
     public string $filterRequester = '';
+
+    public string $filterUnitKerja = '';
 
     public string $filterPeriode = 'today';
 
@@ -45,6 +48,10 @@ class Index extends Component
     }
 
     public function updatedFilterRequester(): void
+    {
+        $this->resetPage();
+    }
+    public function updatedFilterUnitKerja(): void
     {
         $this->resetPage();
     }
@@ -86,6 +93,16 @@ class Index extends Component
                                 "%{$search}%"
                             );
                         }
+                    )
+                    ->orWhereHas(
+                        'unitKerja',
+                        function ($query) use ($search) {
+                            $query->where(
+                                'nama',
+                                'like',
+                                "%{$search}%"
+                            );
+                        }
                     );
             });
         }
@@ -100,6 +117,19 @@ class Index extends Component
             $query->where(
                 'tipe',
                 $this->filterTipe
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Unit Kerja
+        |--------------------------------------------------------------------------
+        */
+
+        if (filled($this->filterUnitKerja)) {
+            $query->where(
+                'unit_kerja_id',
+                $this->filterUnitKerja
             );
         }
 
@@ -186,6 +216,10 @@ class Index extends Component
             [
                 'activities' => $activities,
                 'requesterUnits' => RequesterUnit::query()
+                    ->where('aktif', true)
+                    ->orderBy('nama')
+                    ->get(),
+                'unitKerjas' => UnitKerja::query()
                     ->where('aktif', true)
                     ->orderBy('nama')
                     ->get(),

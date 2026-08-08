@@ -5,12 +5,14 @@ namespace App\Services\WorkActivity;
 use App\Models\TelegramUser;
 use App\Models\WorkActivity;
 use App\Services\Telegram\ResolveRequesterUnitService;
+use App\Services\WorkActivity\ResolveUnitKerjaService;
 
 class CreateWorkActivityFromTelegramService
 {
     public function __construct(
         protected CreateWorkActivityService $createWorkActivity,
         protected ResolveRequesterUnitService $resolveRequesterUnit,
+        protected ResolveUnitKerjaService $resolveUnitKerja,
     ) {
     }
 
@@ -20,6 +22,22 @@ class CreateWorkActivityFromTelegramService
     ): WorkActivity {
 
         $payload = $this->parse($text);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Resolve Unit Kerja
+        |--------------------------------------------------------------------------
+        */
+
+        $unitKerja = $this->resolveUnitKerja->execute(
+            $payload['unit_kerja']
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Resolve Requester
+        |--------------------------------------------------------------------------
+        */
 
         $requesterUnitId = null;
 
@@ -32,13 +50,20 @@ class CreateWorkActivityFromTelegramService
             $requesterUnitId = $requesterUnit->id;
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Create Activity
+        |--------------------------------------------------------------------------
+        */
+
         return $this->createWorkActivity->execute(
             user: $telegramUser->user,
             tipe: $payload['tipe'],
-            requesterUnitId: $requesterUnitId,
-            channel: $payload['channel'],
             durasiMenit: $payload['durasi'],
             ringkasan: $payload['ringkasan'],
+            unitKerjaId: $unitKerja->id,
+            requesterUnitId: $requesterUnitId,
+            channel: $payload['channel'],
         );
     }
 
@@ -57,21 +82,50 @@ class CreateWorkActivityFromTelegramService
             explode('|', $text)
         );
 
-        if (count($parts) !== 5) {
+        /*
+        |--------------------------------------------------------------------------
+        | Format
+        |--------------------------------------------------------------------------
+        |
+        | /act:unit kerja | tipe | requester | media | durasi | ringkasan
+        |
+        */
+
+        if (count($parts) !== 6) {
 
             throw new \InvalidArgumentException(
                 'Format salah. Gunakan: '
-                . '/act:tipe | requester | media | durasi | ringkasan'
+                . '/act:unit kerja | tipe | requester | media | durasi | ringkasan'
             );
         }
 
         [
+            $unitKerja,
             $tipe,
             $requester,
             $channel,
             $durasi,
             $ringkasan,
         ] = $parts;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi Unit Kerja
+        |--------------------------------------------------------------------------
+        */
+
+        if (blank($unitKerja)) {
+
+            throw new \InvalidArgumentException(
+                'Unit kerja wajib diisi.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi Tipe
+        |--------------------------------------------------------------------------
+        */
 
         $allowedTipe = [
             'support',
@@ -84,12 +138,22 @@ class CreateWorkActivityFromTelegramService
             'lainnya',
         ];
 
-        if (! in_array(strtolower($tipe), $allowedTipe, true)) {
+        if (! in_array(
+            strtolower($tipe),
+            $allowedTipe,
+            true
+        )) {
 
             throw new \InvalidArgumentException(
                 "Tipe aktivitas '{$tipe}' tidak valid."
             );
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi Channel
+        |--------------------------------------------------------------------------
+        */
 
         $allowedChannel = [
             'phone',
@@ -101,7 +165,11 @@ class CreateWorkActivityFromTelegramService
 
         if (
             $channel !== '-'
-            && ! in_array(strtolower($channel), $allowedChannel, true)
+            && ! in_array(
+                strtolower($channel),
+                $allowedChannel,
+                true
+            )
         ) {
 
             throw new \InvalidArgumentException(
@@ -109,12 +177,27 @@ class CreateWorkActivityFromTelegramService
             );
         }
 
-        if (! is_numeric($durasi) || (int) $durasi < 1) {
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi Durasi
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            ! is_numeric($durasi)
+            || (int) $durasi < 1
+        ) {
 
             throw new \InvalidArgumentException(
                 'Durasi harus berupa angka menit.'
             );
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi Ringkasan
+        |--------------------------------------------------------------------------
+        */
 
         if (blank($ringkasan)) {
 
@@ -124,12 +207,18 @@ class CreateWorkActivityFromTelegramService
         }
 
         return [
+            'unit_kerja' => trim($unitKerja),
+
             'tipe' => strtolower($tipe),
+
             'requester' => strtolower($requester),
+
             'channel' => strtolower($channel) === '-'
                 ? null
                 : strtolower($channel),
+
             'durasi' => (int) $durasi,
+
             'ringkasan' => $ringkasan,
         ];
     }

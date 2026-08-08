@@ -25,6 +25,50 @@
         class="mt-6 space-y-5"
     >
 
+        {{-- UNIt Kerja --}}
+        <div>
+
+            <div class="mb-1.5 flex items-center justify-between">
+
+                <label
+                    for="unitKerjaId"
+                    class="text-sm font-medium text-gray-700"
+                >
+                    Unit Kerja
+                </label>
+
+            </div>
+
+            <select
+                id="unitKerjaId"
+                wire:model="unitKerjaId"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5
+                       text-sm text-gray-900 outline-none transition
+                       focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
+            >
+
+                <option value="">
+                    Pilih Unit Kerja
+                </option>
+
+                @foreach ($unitKerjas as $unitKerja)
+
+                    <option value="{{ $unitKerja->id }}">
+                        {{ $unitKerja->nama }}
+                    </option>
+
+                @endforeach
+
+            </select>
+
+            @error('unitKerjaId')
+                <p class="mt-1.5 text-sm text-red-600">
+                    {{ $message }}
+                </p>
+            @enderror
+
+        </div>
+
         {{-- Tipe --}}
         <div>
 

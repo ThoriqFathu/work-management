@@ -4,26 +4,37 @@ namespace App\Services\Telegram;
 
 use App\Models\UnitKerja;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
 
 class ResolveUnitKerjaService
 {
-    public function execute(string $name): UnitKerja
+    public function execute(string $keyword): UnitKerja
     {
-        $name = trim($name);
+        $keyword = trim($keyword);
 
-        $unitKerja = UnitKerja::query()
-            ->whereRaw(
-                'LOWER(nama) LIKE ?',
-                ['%' . mb_strtolower($name) . '%']
-            )
-            ->first();
+        $units = UnitKerja::query()
+            ->where('aktif', true)
+            ->where('nama', 'like', "%{$keyword}%")
+            ->get();
 
-        if (! $unitKerja) {
-            throw new ModelNotFoundException(
-                "Unit kerja '{$name}' tidak ditemukan."
-            );
+        if ($units->isEmpty()) {
+            throw ValidationException::withMessages([
+                'unit_kerja' => "Unit kerja '{$keyword}' tidak ditemukan.",
+            ]);
         }
 
-        return $unitKerja;
+        if ($units->count() > 1) {
+            $list = $units
+                ->map(fn ($unit) => "- {$unit->nama}")
+                ->implode("\n");
+
+            throw ValidationException::withMessages([
+                'unit_kerja' =>
+                    "Unit kerja '{$keyword}' ambigu. Ditemukan:\n{$list}\n\n"
+                    . "Gunakan nama yang lebih spesifik.",
+            ]);
+        }
+
+        return $units->first();
     }
 }

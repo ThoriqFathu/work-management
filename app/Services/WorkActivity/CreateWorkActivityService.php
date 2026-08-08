@@ -18,11 +18,13 @@ class CreateWorkActivityService
         string $tipe,
         int $durasiMenit,
         string $ringkasan,
+        int $unitKerjaId,
         ?int $requesterUnitId = null,
         ?string $channel = null,
     ): WorkActivity {
         $activity = WorkActivity::create([
             'user_id' => $user->id,
+            'unit_kerja_id' => $unitKerjaId,
             'requester_unit_id' => $requesterUnitId,
             'tipe' => $tipe,
             'channel' => $channel,

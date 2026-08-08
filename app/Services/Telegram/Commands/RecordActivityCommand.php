@@ -24,10 +24,12 @@ class RecordActivityCommand implements TelegramCommand
     }
 
     public function usage(): string
-    {
-        return '/act:unit kerja | tipe | requester | media | durasi | ringkasan\n'
-        ."/act:RSUD Ketapang | support | Admin Poli | phone | 15 | Membantu user mengatasi printer";
-    }
+        {
+            return <<<TEXT
+        /act:unit kerja | tipe | requester | media | durasi | ringkasan
+        /act:RSUD Ketapang | support | Admin Poli | phone | 15 | Membantu user mengatasi printer
+        TEXT;
+        }
 
     public function handle(
         string $text,

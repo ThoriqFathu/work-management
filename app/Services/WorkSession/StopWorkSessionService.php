@@ -4,12 +4,14 @@ namespace App\Services\WorkSession;
 
 use App\Models\WorkSession;
 use App\Services\ActivityLog\ActivityLogService;
+use App\Services\Telegram\TelegramWorkSessionNotifier;
 use Carbon\Carbon;
 
 class StopWorkSessionService
 {
     public function __construct(
         protected ActivityLogService $activityLogService,
+        protected TelegramWorkSessionNotifier $telegramNotifier,
     ) {
     }
 
@@ -24,8 +26,8 @@ class StopWorkSessionService
             ->diffInMinutes($endedAt);
 
         $workSession->update([
-            'ended_at'      => $endedAt,
-            'durasi_menit'  => $duration,
+            'ended_at' => $endedAt,
+            'durasi_menit' => $duration,
         ]);
 
         $workSession->refresh();
@@ -39,6 +41,10 @@ class StopWorkSessionService
                 'ended_at' => $workSession->ended_at,
                 'durasi_menit' => $workSession->durasi_menit,
             ]
+        );
+
+        $this->telegramNotifier->stopped(
+            session: $workSession,
         );
 
         return $workSession;

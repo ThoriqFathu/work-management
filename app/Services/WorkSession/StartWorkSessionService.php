@@ -6,13 +6,15 @@ use App\Models\User;
 use App\Models\WorkRequest;
 use App\Models\WorkSession;
 use App\Services\ActivityLog\ActivityLogService;
+use App\Services\Telegram\TelegramWorkSessionNotifier;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 
 class StartWorkSessionService
 {
     public function __construct(
-        protected ActivityLogService $activityLogService
+        protected ActivityLogService $activityLogService,
+        protected TelegramWorkSessionNotifier $telegramNotifier,
     ) {
     }
     public function execute(
@@ -50,6 +52,10 @@ class StartWorkSessionService
             subject: $session,
             action: 'session_started',
             description: 'Memulai sesi kerja'
+        );
+        $this->telegramNotifier->started(
+            session: $session,
+            user: $user,
         );
         return $session;
 

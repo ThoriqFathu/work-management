@@ -51,4 +51,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(WorkSession::class);
     }
+
+    public function telegramUser()
+    {
+        return $this->hasOne(
+            \App\Models\TelegramUser::class
+        );
+    }
 }

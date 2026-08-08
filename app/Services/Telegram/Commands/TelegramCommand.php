@@ -8,6 +8,10 @@ interface TelegramCommand
 {
     public function name(): string;
 
+    public function description(): string;
+
+    public function usage(): string;
+
     public function handle(
         string $text,
         TelegramUser $telegramUser,

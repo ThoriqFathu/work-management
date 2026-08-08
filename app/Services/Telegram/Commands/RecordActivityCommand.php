@@ -18,6 +18,17 @@ class RecordActivityCommand implements TelegramCommand
         return '/act:';
     }
 
+    public function description(): string
+    {
+        return 'Mencatat aktivitas kerja spontan.';
+    }
+
+    public function usage(): string
+    {
+        return '/act:unit kerja | tipe | requester | media | durasi | ringkasan\n'
+        ."/act:RSUD Ketapang | support | Admin Poli | phone | 15 | Membantu user mengatasi printer";
+    }
+
     public function handle(
         string $text,
         TelegramUser $telegramUser,
@@ -33,16 +44,21 @@ class RecordActivityCommand implements TelegramCommand
             return implode("\n", [
                 '✅ Aktivitas berhasil dicatat.',
                 '',
-                ucfirst($activity->tipe),
-                "Requester : " . (
+                '🏢 Unit Kerja : ' . (
+                    $activity->unitKerja?->nama ?? '-'
+                ),
+                '📌 Tipe       : ' . ucfirst($activity->tipe),
+                '👤 Requester  : ' . (
                     $activity->requesterUnit?->nama ?? '-'
                 ),
-                "Media     : " . (
+                '📞 Media      : ' . (
                     $this->formatChannel($activity->channel)
                 ),
-                "Durasi    : {$activity->durasi_menit} menit",
+                '⏱️ Durasi     : ' . $this->formatDuration(
+                    $activity->durasi_menit
+                ),
                 '',
-                $activity->ringkasan,
+                '📝 ' . $activity->ringkasan,
             ]);
 
         } catch (Throwable $e) {
@@ -52,6 +68,22 @@ class RecordActivityCommand implements TelegramCommand
             return '❌ Gagal mencatat aktivitas: '
                 . $e->getMessage();
         }
+    }
+
+    protected function formatDuration(int $minutes): string
+    {
+        $hours = intdiv($minutes, 60);
+        $remainingMinutes = $minutes % 60;
+
+        if ($hours > 0 && $remainingMinutes > 0) {
+            return "{$hours} jam {$remainingMinutes} menit";
+        }
+
+        if ($hours > 0) {
+            return "{$hours} jam";
+        }
+
+        return "{$remainingMinutes} menit";
     }
 
     protected function formatChannel(?string $channel): string

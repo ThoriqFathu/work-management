@@ -17,6 +17,16 @@ class InfoRequesterCommand implements TelegramCommand
         return '/info-requester';
     }
 
+    public function description(): string
+    {
+        return 'Menampilkan daftar master requester.';
+    }
+
+    public function usage(): string
+    {
+        return '/info-requester';
+    }
+
     public function handle(
         string $text,
         TelegramUser $telegramUser,

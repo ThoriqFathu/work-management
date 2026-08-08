@@ -6,11 +6,8 @@ use App\Models\TelegramUser;
 
 class TelegramCommandRouter
 {
-    /**
-     * @param iterable<TelegramCommand> $commands
-     */
     public function __construct(
-        protected iterable $commands,
+        protected TelegramCommandRegistry $registry,
     ) {
     }
 
@@ -18,10 +15,16 @@ class TelegramCommandRouter
         string $text,
         TelegramUser $telegramUser,
     ): ?string {
+
         $text = trim($text);
 
-        foreach ($this->commands as $command) {
-            if ($this->matches($command->name(), $text)) {
+        foreach ($this->registry->all() as $command) {
+
+            if ($this->matches(
+                $command->name(),
+                $text
+            )) {
+
                 return $command->handle(
                     $text,
                     $telegramUser,
@@ -36,6 +39,7 @@ class TelegramCommandRouter
         string $command,
         string $text,
     ): bool {
+
         $command = strtolower($command);
         $text = strtolower($text);
 

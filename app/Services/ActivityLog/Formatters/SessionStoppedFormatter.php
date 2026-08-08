@@ -25,17 +25,21 @@ class SessionStoppedFormatter implements ActivityFormatterInterface
 
             'details' => [
 
-                [
+               [
                     'label' => 'Mulai',
                     'value' => $started
-                        ? Carbon::parse($started)->format('d M Y H:i')
+                        ? Carbon::parse($started)
+                            ->timezone('Asia/Jakarta')
+                            ->format('d M Y H:i')
                         : '-',
                 ],
 
                 [
                     'label' => 'Selesai',
                     'value' => $ended
-                        ? Carbon::parse($ended)->format('d M Y H:i')
+                        ? Carbon::parse($ended)
+                            ->timezone('Asia/Jakarta')
+                            ->format('d M Y H:i')
                         : '-',
                 ],
 

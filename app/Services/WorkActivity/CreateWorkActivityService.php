@@ -30,17 +30,17 @@ class CreateWorkActivityService
             'ringkasan' => $ringkasan,
         ]);
 
-        $this->activityLogService->log(
-            subject: $activity,
-            action: 'created',
-            description: 'Mencatat aktivitas kerja spontan',
-            new: [
-                'tipe' => $activity->tipe,
-                'channel' => $activity->channel,
-                'durasi_menit' => $activity->durasi_menit,
-                'ringkasan' => $activity->ringkasan,
-            ],
-        );
+        // $this->activityLogService->log(
+        //     subject: $activity,
+        //     action: 'created',
+        //     description: 'Mencatat aktivitas kerja spontan',
+        //     new: [
+        //         'tipe' => $activity->tipe,
+        //         'channel' => $activity->channel,
+        //         'durasi_menit' => $activity->durasi_menit,
+        //         'ringkasan' => $activity->ringkasan,
+        //     ],
+        // );
 
         return $activity;
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TelegramChat;
 use App\Models\TelegramUser;
 use App\Services\Telegram\CreateWorkRequestFromTelegramService;
+use App\Services\Telegram\InfoRequesterService;
 use App\Services\Telegram\TelegramBotService;
 use App\Services\Telegram\TelegramRequestParser;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class TelegramWebhookController extends Controller
         TelegramRequestParser $parser,
         CreateWorkRequestFromTelegramService $createWorkRequest,
         TelegramBotService $telegram,
+        InfoRequesterService $infoRequester,
     ) {
         $update = $request->all();
 
@@ -103,6 +105,32 @@ class TelegramWebhookController extends Controller
             ->exists();
 
         if (! $allowed) {
+            return response()->json([
+                'ok' => true,
+            ]);
+        }
+
+        if (strtolower(trim($text)) === '/info-requester') {
+
+            try {
+
+                $response = $infoRequester->execute();
+
+                $telegram->sendMessage(
+                    $telegramChatId,
+                    $response
+                );
+
+            } catch (Throwable $e) {
+
+                report($e);
+
+                $telegram->sendMessage(
+                    $telegramChatId,
+                    '❌ Gagal mengambil data master requester.'
+                );
+            }
+
             return response()->json([
                 'ok' => true,
             ]);

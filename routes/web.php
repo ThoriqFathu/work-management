@@ -80,20 +80,10 @@ Route::middleware(['auth'])->group(function () {
         '/work-session-output/{workSessionOutput}',
         [WorkSessionOutputController::class, 'destroy']
     )->name('work-session-output.destroy');
-});
-Route::get('/test-telegram-parser', function (
-    TelegramRequestParser $parser
-) {
 
-    $message = <<<'TEXT'
-/req:ketapang
-- dashboard eksekutif | direktur
-- form bank darah | laborat
-- monitoring kasir | keuangan
-TEXT;
-
-    return $parser->parse($message);
+    
 });
+
 
 
 Route::get('/test-telegram-request', function () {
@@ -139,3 +129,4 @@ TEXT;
 
 require __DIR__.'/auth.php';
 require __DIR__.'/webhook-tele.php';
+require __DIR__.'/work-activity.php';

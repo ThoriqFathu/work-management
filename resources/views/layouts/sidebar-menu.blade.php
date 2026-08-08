@@ -1,8 +1,8 @@
 <a
-    href="{{ route('dashboard') }}"
+    href="{{ route('dashboard.workload') }}"
     class="block rounded-lg px-4 py-2 hover:bg-slate-700"
 >
-    Dashboard
+    Dashboard Workload
 </a>
 
 <a

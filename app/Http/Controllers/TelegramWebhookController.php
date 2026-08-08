@@ -8,6 +8,7 @@ use App\Services\Telegram\CreateWorkRequestFromTelegramService;
 use App\Services\Telegram\TelegramBotService;
 use App\Services\Telegram\TelegramRequestParser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class TelegramWebhookController extends Controller
@@ -21,6 +22,17 @@ class TelegramWebhookController extends Controller
         $update = $request->all();
 
         $message = $update['message'] ?? null;
+
+        Log::info('Telegram Identity', [
+            'telegram_user_id' => $message['from']['id'] ?? null,
+            'username' => $message['from']['username'] ?? null,
+            'first_name' => $message['from']['first_name'] ?? null,
+            'last_name' => $message['from']['last_name'] ?? null,
+
+            'telegram_chat_id' => $message['chat']['id'] ?? null,
+            'chat_title' => $message['chat']['title'] ?? null,
+            'chat_type' => $message['chat']['type'] ?? null,
+        ]);
 
         if (! $message) {
             return response()->json([

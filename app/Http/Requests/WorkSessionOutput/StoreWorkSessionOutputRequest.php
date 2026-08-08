@@ -31,7 +31,12 @@ class StoreWorkSessionOutputRequest extends FormRequest
                 ]),
             ],
 
-            'value' => [
+            'url' => [
+                'nullable',
+                'url',
+            ],
+
+            'content' => [
                 'nullable',
                 'string',
             ],
@@ -39,7 +44,7 @@ class StoreWorkSessionOutputRequest extends FormRequest
             'file' => [
                 'nullable',
                 'file',
-                'max:10240', //10MB
+                'max:10240',
             ],
 
             'catatan' => [
@@ -64,13 +69,25 @@ class StoreWorkSessionOutputRequest extends FormRequest
             }
 
             if (
-                in_array($this->tipe, ['link', 'text'])
-                && blank($this->value)
+                $this->tipe === 'link'
+                && blank($this->url)
             ) {
 
                 $validator->errors()->add(
-                    'value',
-                    'Value wajib diisi.'
+                    'url',
+                    'URL wajib diisi.'
+                );
+
+            }
+
+            if (
+                $this->tipe === 'text'
+                && blank($this->content)
+            ) {
+
+                $validator->errors()->add(
+                    'content',
+                    'Isi text wajib diisi.'
                 );
 
             }

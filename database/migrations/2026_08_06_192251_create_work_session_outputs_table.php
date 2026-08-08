@@ -22,17 +22,51 @@ return new class extends Migration
             // file | link | text
             $table->string('tipe', 20);
 
-            // Nama output
+            // Judul output
             $table->string('nama');
 
-            // Path file / URL / isi text
-            $table->longText('value');
+            /*
+            |--------------------------------------------------------------------------
+            | Link
+            |--------------------------------------------------------------------------
+            */
+            $table->text('url')->nullable();
 
-            // Keterangan tambahan
+            /*
+            |--------------------------------------------------------------------------
+            | File
+            |--------------------------------------------------------------------------
+            */
+            $table->string('storage_path')->nullable();
+
+            $table->string('original_filename')->nullable();
+
+            $table->string('mime_type')->nullable();
+
+            $table->unsignedBigInteger('size')->nullable();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Text
+            |--------------------------------------------------------------------------
+            */
+            $table->longText('content')->nullable();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Catatan
+            |--------------------------------------------------------------------------
+            */
             $table->text('catatan')->nullable();
 
-            // Urutan tampilan
+            /*
+            |--------------------------------------------------------------------------
+            | Urutan
+            |--------------------------------------------------------------------------
+            */
             $table->unsignedSmallInteger('urutan')->default(1);
+
+            $table->softDeletes();
 
             $table->timestamps();
 

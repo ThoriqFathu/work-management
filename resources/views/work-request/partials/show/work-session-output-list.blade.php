@@ -32,45 +32,56 @@
 
                 <div class="mt-3">
 
-                    @switch($output->tipe)
 
-                        @case('file')
+                        @switch($output->tipe)
 
-                            <a
-                                href="{{ asset('storage/'.$output->value) }}"
-                                target="_blank"
-                                class="text-blue-600 hover:underline"
-                            >
+                            @case('file')
 
-                                📄 Download File
+                                <a
+                                    href="{{ $output->file_url }}"
+                                    target="_blank"
+                                    class="text-blue-600 hover:underline"
+                                >
 
-                            </a>
+                                    📄 {{ $output->original_filename }}
 
-                            @break
+                                </a>
 
-                        @case('link')
+                                @if($output->human_size)
 
-                            <a
-                                href="{{ $output->value }}"
-                                target="_blank"
-                                class="break-all text-blue-600 hover:underline"
-                            >
+                                    <div class="mt-1 text-xs text-gray-500">
 
-                                {{ $output->value }}
+                                        {{ $output->human_size }}
 
-                            </a>
+                                    </div>
 
-                            @break
+                                @endif
 
-                        @case('text')
+                                @break
 
-                            <pre
-                                class="overflow-auto rounded bg-gray-100 p-3 text-sm"
-                            >{{ $output->value }}</pre>
+                            @case('link')
 
-                            @break
+                                <a
+                                    href="{{ $output->url }}"
+                                    target="_blank"
+                                    class="break-all text-blue-600 hover:underline"
+                                >
 
-                    @endswitch
+                                    {{ $output->url }}
+
+                                </a>
+
+                                @break
+
+                            @case('text')
+
+                                <pre
+                                    class="overflow-auto rounded bg-gray-100 p-3 text-sm"
+                                >{{ $output->content }}</pre>
+
+                                @break
+
+                        @endswitch
 
                 </div>
 

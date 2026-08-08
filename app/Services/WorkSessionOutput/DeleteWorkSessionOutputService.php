@@ -12,24 +12,67 @@ class DeleteWorkSessionOutputService
         protected ActivityLogService $activityLogService
     ) {
     }
+
     public function execute(
         WorkSessionOutput $output
     ): void {
 
+        /*
+        |--------------------------------------------------------------------------
+        | Hapus file fisik
+        |--------------------------------------------------------------------------
+        */
+
         if (
-            $output->tipe === 'file'
-            && $output->value
+            $output->isFile()
+            && $output->storage_path
         ) {
 
             Storage::disk('public')
-                ->delete($output->value);
+                ->delete($output->storage_path);
 
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Log
+        |--------------------------------------------------------------------------
+        */
+
         $this->activityLogService->log(
+
             subject: $output,
+
             action: 'output_deleted',
-            description: "Menghapus output {$output->nama}"
+
+            description: 'Menghapus output',
+
+            old: [
+
+                'nama' => $output->nama,
+
+                'tipe' => $output->tipe,
+
+                'url' => $output->url,
+
+                'original_filename' => $output->original_filename,
+
+                'size' => $output->human_size,
+
+                'content' => $output->content,
+
+                'catatan' => $output->catatan,
+
+            ]
+
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Soft Delete
+        |--------------------------------------------------------------------------
+        */
+
         $output->delete();
 
     }

@@ -67,8 +67,9 @@
 
                     <input
                         type="url"
-                        name="value"
+                        name="url"
                         class="w-full rounded border px-3 py-2"
+                        placeholder="https://..."
                     >
                 `;
 
@@ -84,7 +85,7 @@
                     </label>
 
                     <textarea
-                        name="value"
+                        name="content"
                         rows="6"
                         class="w-full rounded border px-3 py-2"
                     ></textarea>

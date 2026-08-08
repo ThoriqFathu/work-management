@@ -65,32 +65,43 @@ class WorkRequestService
 
     //     return $workRequest;
     // }
-    public function create(array $data): WorkRequest
-    {
+   public function create(
+        array $data,
+        ?\App\Models\User $user = null
+    ): WorkRequest {
         $lastId = WorkRequest::max('id') + 1;
 
-        $data['kode'] = 'WR'.str_pad($lastId, 6, '0', STR_PAD_LEFT);
+        $user ??= auth()->user();
 
-        $data['created_by'] = auth()->id();
+        $data['kode'] = 'WR' . str_pad(
+            $lastId,
+            6,
+            '0',
+            STR_PAD_LEFT
+        );
 
-        $data['request_date'] = now();
+        $data['created_by'] ??= $user?->id;
 
-        $data['status_id'] = Status::where('nama', 'Request')->value('id');
+        $data['request_date'] ??= now();
 
-        $data['priority_id'] = Priority::where('nama', 'Medium')->value('id');
+        $data['status_id'] ??= Status::where(
+            'nama',
+            'Request'
+        )->value('id');
+
+        $data['priority_id'] ??= Priority::where(
+            'nama',
+            'Medium'
+        )->value('id');
 
         $workRequest = WorkRequest::create($data);
 
         $this->activityLogService->log(
-
             subject: $workRequest,
-
             action: 'created',
-
             description: 'Membuat Work Request',
-
+            user: $user,
         );
-
 
         return $workRequest;
     }

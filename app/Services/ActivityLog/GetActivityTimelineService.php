@@ -7,6 +7,11 @@ use Illuminate\Support\Collection;
 
 class GetActivityTimelineService
 {
+    public function __construct(
+    protected ActivityLogFormatter $formatter,
+    ) {
+    }
+
     public function execute(
         WorkRequest $workRequest
     ): Collection {
@@ -16,8 +21,6 @@ class GetActivityTimelineService
             'activityLogs.user',
 
             'workSessions.activityLogs.user',
-
-            'workSessions.outputs.activityLogs.user',
 
         ]);
 
@@ -51,18 +54,25 @@ class GetActivityTimelineService
             |--------------------------------------------------------------------------
             */
 
-            foreach ($session->outputs as $output) {
+            $session->outputs()
+            ->withTrashed()
+            ->with('activityLogs.user')
+            ->get()
+            ->each(function ($output) use (&$timeline) {
 
                 $timeline = $timeline->merge(
                     $output->activityLogs
                 );
 
-            }
+            });
 
         }
 
         return $timeline
             ->sortByDesc('created_at')
-            ->values();
+            ->values()
+            ->map(
+                fn ($activity) => $this->formatter->format($activity)
+            );
     }
 }

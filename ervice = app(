@@ -1,0 +1,20 @@
+[90m= [39m[
+    [34m"[39m[34munit_kerja[39m[34m"[39m => [32m"[39m[32mketapang[39m[32m"[39m,
+    [34m"[39m[34mrequests[39m[34m"[39m => [
+      [
+        [34m"[39m[34mjudul[39m[34m"[39m => [32m"[39m[32mdashboard eksekutif[39m[32m"[39m,
+        [34m"[39m[34mrequester[39m[34m"[39m => [32m"[39m[32mdirektur[39m[32m"[39m,
+        [34m"[39m[34mpriority[39m[34m"[39m => [36mnull[39m,
+      ],
+      [
+        [34m"[39m[34mjudul[39m[34m"[39m => [32m"[39m[32mform bank darah[39m[32m"[39m,
+        [34m"[39m[34mrequester[39m[34m"[39m => [32m"[39m[32mlaborat[39m[32m"[39m,
+        [34m"[39m[34mpriority[39m[34m"[39m => [36mnull[39m,
+      ],
+      [
+        [34m"[39m[34mjudul[39m[34m"[39m => [32m"[39m[32mmonitoring kasir[39m[32m"[39m,
+        [34m"[39m[34mrequester[39m[34m"[39m => [32m"[39m[32mkeuangan[39m[32m"[39m,
+        [34m"[39m[34mpriority[39m[34m"[39m => [36mnull[39m,
+      ],
+    ],
+  ]

@@ -11,6 +11,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WorkRequestController;
 use App\Http\Controllers\WorkSessionController;
 use App\Http\Controllers\WorkSessionOutputController;
+use App\Models\TelegramUser;
+use App\Services\Telegram\CreateWorkRequestFromTelegramService;
+use App\Services\Telegram\TelegramRequestParser;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -78,5 +81,61 @@ Route::middleware(['auth'])->group(function () {
         [WorkSessionOutputController::class, 'destroy']
     )->name('work-session-output.destroy');
 });
+Route::get('/test-telegram-parser', function (
+    TelegramRequestParser $parser
+) {
+
+    $message = <<<'TEXT'
+/req:ketapang
+- dashboard eksekutif | direktur
+- form bank darah | laborat
+- monitoring kasir | keuangan
+TEXT;
+
+    return $parser->parse($message);
+});
+
+
+Route::get('/test-telegram-request', function () {
+
+    $message = <<<'TEXT'
+/req:ketapang
+- dashboard eksekutif | direktur
+- form bank darah | it
+- monitoring kasir | keuangan
+TEXT;
+
+    $telegramUser = TelegramUser::firstOrFail();
+
+    $parser = app(TelegramRequestParser::class);
+
+    $parsed = $parser->parse($message);
+
+    $service = app(CreateWorkRequestFromTelegramService::class);
+
+    $created = $service->execute(
+        $parsed,
+        $telegramUser
+    );
+
+    dd([
+        'parsed' => $parsed,
+
+        'created' => collect($created)->map(
+            fn ($workRequest) => [
+                'id' => $workRequest->id,
+                'kode' => $workRequest->kode,
+                'judul' => $workRequest->judul,
+                'unit_kerja_id' => $workRequest->unit_kerja_id,
+                'requester_unit_id' => $workRequest->requester_unit_id,
+                'status_id' => $workRequest->status_id,
+                'priority_id' => $workRequest->priority_id,
+                'created_by' => $workRequest->created_by,
+            ]
+        )->values(),
+    ]);
+});
+
 
 require __DIR__.'/auth.php';
+require __DIR__.'/webhook-tele.php';

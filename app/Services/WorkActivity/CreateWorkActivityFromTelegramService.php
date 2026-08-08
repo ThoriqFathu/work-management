@@ -25,9 +25,11 @@ class CreateWorkActivityFromTelegramService
 
         if ($payload['requester'] !== '-') {
 
-            $requesterUnitId = $this->resolveRequesterUnit->execute(
+            $requesterUnit = $this->resolveRequesterUnit->execute(
                 $payload['requester']
             );
+
+            $requesterUnitId = $requesterUnit->id;
         }
 
         return $this->createWorkActivity->execute(

@@ -5,7 +5,7 @@ namespace App\Services\WorkActivity;
 use App\Models\TelegramUser;
 use App\Models\WorkActivity;
 use App\Services\Telegram\ResolveRequesterUnitService;
-use App\Services\WorkActivity\ResolveUnitKerjaService;
+use App\Services\Telegram\ResolveUnitKerjaService;
 
 class CreateWorkActivityFromTelegramService
 {

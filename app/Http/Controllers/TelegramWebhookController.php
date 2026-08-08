@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\TelegramChat;
 use App\Models\TelegramUser;
-use App\Services\Telegram\CreateWorkRequestFromTelegramService;
-use App\Services\Telegram\InfoRequesterService;
+use App\Services\Telegram\Commands\TelegramCommandRouter;
 use App\Services\Telegram\TelegramBotService;
-use App\Services\Telegram\TelegramRequestParser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -16,25 +14,12 @@ class TelegramWebhookController extends Controller
 {
     public function __invoke(
         Request $request,
-        TelegramRequestParser $parser,
-        CreateWorkRequestFromTelegramService $createWorkRequest,
+        TelegramCommandRouter $router,
         TelegramBotService $telegram,
-        InfoRequesterService $infoRequester,
     ) {
         $update = $request->all();
 
         $message = $update['message'] ?? null;
-
-        Log::info('Telegram Identity', [
-            'telegram_user_id' => $message['from']['id'] ?? null,
-            'username' => $message['from']['username'] ?? null,
-            'first_name' => $message['from']['first_name'] ?? null,
-            'last_name' => $message['from']['last_name'] ?? null,
-
-            'telegram_chat_id' => $message['chat']['id'] ?? null,
-            'chat_title' => $message['chat']['title'] ?? null,
-            'chat_type' => $message['chat']['type'] ?? null,
-        ]);
 
         if (! $message) {
             return response()->json([
@@ -57,6 +42,22 @@ class TelegramWebhookController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Log Identity
+        |--------------------------------------------------------------------------
+        */
+
+        Log::info('Telegram Identity', [
+            'telegram_user_id' => $telegramUserId,
+            'username' => $from['username'] ?? null,
+            'first_name' => $from['first_name'] ?? null,
+            'last_name' => $from['last_name'] ?? null,
+            'telegram_chat_id' => $telegramChatId,
+            'chat_title' => $chat['title'] ?? null,
+            'chat_type' => $chat['type'] ?? null,
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
         | Whitelist Chat
         |--------------------------------------------------------------------------
         */
@@ -74,7 +75,7 @@ class TelegramWebhookController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Whitelist User + Laravel User Mapping
+        | Whitelist User
         |--------------------------------------------------------------------------
         */
 
@@ -92,7 +93,7 @@ class TelegramWebhookController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Pastikan User tergabung di Chat
+        | Chat Membership
         |--------------------------------------------------------------------------
         */
 
@@ -110,70 +111,25 @@ class TelegramWebhookController extends Controller
             ]);
         }
 
-        if (strtolower(trim($text)) === '/info-requester') {
+        /*
+        |--------------------------------------------------------------------------
+        | Command
+        |--------------------------------------------------------------------------
+        */
 
-            try {
+        try {
 
-                $response = $infoRequester->execute();
+            $response = $router->handle(
+                $text,
+                $telegramUser,
+            );
 
+            if ($response !== null) {
                 $telegram->sendMessage(
                     $telegramChatId,
                     $response
                 );
-
-            } catch (Throwable $e) {
-
-                report($e);
-
-                $telegram->sendMessage(
-                    $telegramChatId,
-                    '❌ Gagal mengambil data master requester.'
-                );
             }
-
-            return response()->json([
-                'ok' => true,
-            ]);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Hanya proses /req
-        |--------------------------------------------------------------------------
-        */
-
-        if (! str_starts_with(
-            strtolower(trim($text)),
-            '/req:'
-        )) {
-            return response()->json([
-                'ok' => true,
-            ]);
-        }
-
-        try {
-
-            $parsed = $parser->parse($text);
-
-            $workRequests = $createWorkRequest->execute(
-                $parsed,
-                $telegramUser,
-            );
-
-            $lines = [
-                '✅ Work Request berhasil dibuat:',
-                '',
-            ];
-
-            foreach ($workRequests as $workRequest) {
-                $lines[] =
-                    "{$workRequest->kode} - {$workRequest->judul}";
-            }
-
-            $telegram->sendMessage(
-                $telegramChatId,
-                implode("\n", $lines)
-            );
 
         } catch (Throwable $e) {
 
@@ -181,13 +137,8 @@ class TelegramWebhookController extends Controller
 
             $telegram->sendMessage(
                 $telegramChatId,
-                "❌ Gagal membuat Work Request.\n\n"
-                . $e->getMessage()
+                '❌ Terjadi kesalahan saat memproses command.'
             );
-
-            return response()->json([
-                'ok' => true,
-            ]);
         }
 
         return response()->json([

@@ -2,14 +2,12 @@
 
 namespace App\Console\Commands;
 
-use App\Models\User;
 use App\Services\Telegram\RegisterTelegramMemberService;
 use Illuminate\Console\Command;
 
 class RegisterTelegramMember extends Command
 {
     protected $signature = 'telegram:register-member
-        {laravel_user_id : ID user Laravel}
         {telegram_user_id : ID user Telegram}
         {--chat-id= : ID chat Telegram}
         {--title= : Nama group Telegram}
@@ -18,12 +16,11 @@ class RegisterTelegramMember extends Command
         {--first-name= : Nama depan Telegram}
         {--last-name= : Nama belakang Telegram}';
 
-    protected $description = 'Register Telegram user ke chat Telegram';
+    protected $description = 'Register Telegram user dan otomatis membuat Laravel User';
 
     public function handle(
         RegisterTelegramMemberService $service
     ): int {
-
         $chatId = $this->option('chat-id');
 
         if (! $chatId) {
@@ -32,20 +29,25 @@ class RegisterTelegramMember extends Command
             return self::FAILURE;
         }
 
-        $user = User::find(
-            $this->argument('laravel_user_id')
-        );
+        $telegramUserId = (int) $this->argument('telegram_user_id');
 
-        if (! $user) {
-            $this->error(
-                'User Laravel tidak ditemukan.'
-            );
+        $username = $this->option('username');
+        $firstName = $this->option('first-name');
+        $lastName = $this->option('last-name');
+
+        if (! $username) {
+            $this->error('--username wajib diisi.');
 
             return self::FAILURE;
         }
 
-        $telegramUser = $service->execute(
+        if (! $firstName) {
+            $this->error('--first-name wajib diisi.');
 
+            return self::FAILURE;
+        }
+
+        $result = $service->execute(
             telegramChatId: (int) $chatId,
 
             chatData: [
@@ -53,22 +55,33 @@ class RegisterTelegramMember extends Command
                 'type' => $this->option('type'),
             ],
 
-            telegramUserId: (int) $this->argument(
-                'telegram_user_id'
-            ),
+            telegramUserId: $telegramUserId,
 
             userData: [
-                'username' => $this->option('username'),
-                'first_name' => $this->option('first-name'),
-                'last_name' => $this->option('last-name'),
+                'username' => $username,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
             ],
-
-            user: $user,
         );
 
-        $this->info(
-            "Telegram user berhasil didaftarkan: {$telegramUser->id}"
-        );
+        $this->newLine();
+
+        $this->info('Telegram user berhasil didaftarkan.');
+
+        $this->line("Laravel User ID : {$result['user']->id}");
+        $this->line("Nama            : {$result['user']->name}");
+        $this->line("Email           : {$result['user']->email}");
+        $this->line("Password        : password");
+
+        $this->newLine();
+
+        $this->line("Telegram User ID: {$result['telegramUser']->telegram_user_id}");
+        $this->line("Username        : @{$result['telegramUser']->username}");
+
+        $this->newLine();
+
+        $this->line("Chat ID         : {$result['telegramChat']->telegram_chat_id}");
+        $this->line("Chat            : {$result['telegramChat']->title}");
 
         return self::SUCCESS;
     }

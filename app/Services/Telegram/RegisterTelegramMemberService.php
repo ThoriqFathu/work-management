@@ -6,6 +6,9 @@ use App\Models\TelegramChat;
 use App\Models\TelegramUser;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use RuntimeException;
 
 class RegisterTelegramMemberService
 {
@@ -14,16 +17,60 @@ class RegisterTelegramMemberService
         array $chatData,
         int $telegramUserId,
         array $userData,
-        User $user,
-    ): TelegramUser {
-
+    ): array {
         return DB::transaction(function () use (
             $telegramChatId,
             $chatData,
             $telegramUserId,
             $userData,
-            $user,
         ) {
+
+            $username = trim($userData['username'] ?? '');
+
+            if ($username === '') {
+                throw new RuntimeException(
+                    'Username Telegram wajib diisi.'
+                );
+            }
+
+            $firstName = trim($userData['first_name'] ?? '');
+
+            if ($firstName === '') {
+                throw new RuntimeException(
+                    'Nama depan Telegram wajib diisi.'
+                );
+            }
+
+            $lastName = trim($userData['last_name'] ?? '');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Laravel User
+            |--------------------------------------------------------------------------
+            */
+
+            $email = strtolower($username) . '@tes.com';
+
+            $user = User::where('email', $email)->first();
+
+            if (! $user) {
+
+                $name = trim(
+                    $firstName . ' ' . $lastName
+                );
+
+                $user = User::create([
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => Hash::make('password'),
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Telegram Chat
+            |--------------------------------------------------------------------------
+            */
 
             $chat = TelegramChat::updateOrCreate(
                 [
@@ -36,24 +83,40 @@ class RegisterTelegramMemberService
                 ]
             );
 
+            /*
+            |--------------------------------------------------------------------------
+            | Telegram User
+            |--------------------------------------------------------------------------
+            */
+
             $telegramUser = TelegramUser::updateOrCreate(
                 [
                     'telegram_user_id' => $telegramUserId,
                 ],
                 [
                     'user_id' => $user->id,
-                    'username' => $userData['username'] ?? null,
-                    'first_name' => $userData['first_name'] ?? null,
-                    'last_name' => $userData['last_name'] ?? null,
+                    'username' => $username,
+                    'first_name' => $firstName,
+                    'last_name' => $lastName ?: null,
                     'is_active' => true,
                 ]
             );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Chat Member
+            |--------------------------------------------------------------------------
+            */
 
             $chat->users()->syncWithoutDetaching([
                 $telegramUser->id,
             ]);
 
-            return $telegramUser;
+            return [
+                'user' => $user,
+                'telegramUser' => $telegramUser,
+                'telegramChat' => $chat,
+            ];
         });
     }
 }

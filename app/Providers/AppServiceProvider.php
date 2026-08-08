@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\Telegram\Commands\CreateRequestCommand;
+use App\Services\Telegram\Commands\HelpCommand;
 use App\Services\Telegram\Commands\InfoRequesterCommand;
 use App\Services\Telegram\Commands\RecordActivityCommand;
 use App\Services\Telegram\Commands\TelegramCommand;
@@ -16,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
             InfoRequesterCommand::class,
             CreateRequestCommand::class,
             RecordActivityCommand::class,
+            HelpCommand::class,
         ], 'telegram.commands');
 
         $this->app->singleton(

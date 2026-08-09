@@ -63,29 +63,23 @@
 
                                 <div>
 
-                                    @if(isset($detail['before']))
+                                    @if(array_key_exists('before', $detail))
 
                                         <div>
-
-                                            {{ $detail['before'] }}
-
+                                            {{ $detail['before'] ?? '-' }}
                                         </div>
 
                                         <div class="text-center text-gray-400">
-
                                             ↓
-
                                         </div>
 
                                         <div class="font-semibold">
-
-                                            {{ $detail['after'] }}
-
+                                            {{ $detail['after'] ?? '-' }}
                                         </div>
 
                                     @else
 
-                                        {{ $detail['value'] }}
+                                        {{ $detail['value'] ?? '-' }}
 
                                     @endif
 

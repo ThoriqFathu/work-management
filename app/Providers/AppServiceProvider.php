@@ -7,6 +7,7 @@ use App\Services\Telegram\Commands\HelpCommand;
 use App\Services\Telegram\Commands\InfoRequesterCommand;
 use App\Services\Telegram\Commands\InfoWorkSessionCommand;
 use App\Services\Telegram\Commands\RecordActivityCommand;
+use App\Services\Telegram\Commands\StopWorkSessionCommand;
 use App\Services\Telegram\Commands\TelegramCommand;
 use Illuminate\Support\ServiceProvider;
 
@@ -19,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
             CreateRequestCommand::class,
             RecordActivityCommand::class,
             InfoWorkSessionCommand::class,
+            StopWorkSessionCommand::class,
             HelpCommand::class,
         ], 'telegram.commands');
 

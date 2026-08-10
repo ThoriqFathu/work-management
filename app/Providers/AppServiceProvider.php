@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\Telegram\Commands\CreateRequestCommand;
 use App\Services\Telegram\Commands\HelpCommand;
 use App\Services\Telegram\Commands\InfoRequesterCommand;
+use App\Services\Telegram\Commands\InfoWorkSessionCommand;
 use App\Services\Telegram\Commands\RecordActivityCommand;
 use App\Services\Telegram\Commands\TelegramCommand;
 use Illuminate\Support\ServiceProvider;
@@ -17,6 +18,7 @@ class AppServiceProvider extends ServiceProvider
             InfoRequesterCommand::class,
             CreateRequestCommand::class,
             RecordActivityCommand::class,
+            InfoWorkSessionCommand::class,
             HelpCommand::class,
         ], 'telegram.commands');
 

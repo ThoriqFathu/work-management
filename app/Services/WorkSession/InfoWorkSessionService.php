@@ -2,41 +2,61 @@
 
 namespace App\Services\WorkSession;
 
-use App\Models\User;
 use App\Models\WorkSession;
 
 class InfoWorkSessionService
 {
-    public function execute(User $user): string
+    public function execute(): string
     {
-        $session = WorkSession::query()
-            ->where('user_id', $user->id)
+        $sessions = WorkSession::query()
+            ->with([
+                'user',
+                'workRequest',
+            ])
             ->whereNull('ended_at')
-            ->latest('started_at')
-            ->first();
+            ->orderBy('started_at')
+            ->get();
 
-        if (! $session) {
+        if ($sessions->isEmpty()) {
             return implode("\n", [
                 'ℹ️ Tidak ada Work Session aktif.',
-                '',
-                'Gunakan /start untuk memulai session.',
             ]);
         }
 
-        return implode("\n", [
-            '🟢 Work Session aktif',
+        $lines = [
+            '🟢 WORK SESSION AKTIF',
             '',
-            "Mulai    : {$session->started_at->format('d M Y H:i')}",
-            "Durasi   : {$this->formatDuration($session->started_at)}",
-            '',
-            "Request  : " . (
+        ];
+
+        foreach ($sessions as $index => $session) {
+            $lines[] = ($index + 1) . '. ' . (
+                $session->user?->name ?? '-'
+            );
+
+            $lines[] = '   Request : ' . (
                 $session->workRequest?->judul ?? '-'
-            ),
-        ]);
+            );
+
+            $lines[] = '   Mulai   : ' . (
+                $session->started_at?->format('d M Y H:i') ?? '-'
+            );
+
+            $lines[] = '   Durasi  : ' . (
+                $this->formatDuration($session->started_at)
+            );
+
+            $lines[] = '';
+        }
+
+        return implode("\n", $lines);
     }
 
     protected function formatDuration($startedAt): string
     {
+        if (! $startedAt) {
+            return '-';
+        }
+
         $minutes = $startedAt->diffInMinutes(now());
 
         $hours = intdiv($minutes, 60);

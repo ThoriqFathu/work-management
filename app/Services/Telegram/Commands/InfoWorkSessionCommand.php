@@ -31,8 +31,6 @@ class InfoWorkSessionCommand implements TelegramCommand
         string $text,
         TelegramUser $telegramUser,
     ): ?string {
-        return $this->service->execute(
-            $telegramUser->user
-        );
+        return $this->service->execute();
     }
 }

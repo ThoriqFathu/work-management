@@ -2,6 +2,8 @@
 
     @include('livewire.dashboard.workload.partials.header')
 
+    @include('livewire.dashboard.workload.partials.user-filter')
+
     @include('livewire.dashboard.workload.partials.period-filter')
 
     @include('livewire.dashboard.workload.partials.summary')

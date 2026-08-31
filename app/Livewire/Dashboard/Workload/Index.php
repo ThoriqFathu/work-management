@@ -4,6 +4,7 @@ namespace App\Livewire\Dashboard\Workload;
 
 use App\Analytics\Features\Workload\DTO\WorkloadFilter;
 use App\Analytics\Features\Workload\Managers\WorkloadManager;
+use App\Models\User;
 use Carbon\Carbon;
 use Livewire\Component;
 
@@ -24,7 +25,6 @@ class Index extends Component
 
     public function mount(): void
     {
-        $this->userId = auth()->id();
 
         $this->setPeriodeTanggal();
     }
@@ -106,11 +106,19 @@ class Index extends Component
 
         $result = $manager->calculate($filter);
 
+        $users = User::query()
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+            ]);
+
 
         return view(
             'livewire.dashboard.workload.index',
             [
                 'result' => $result,
+                'users' => $users,
             ]
         )->extends('layouts.app')->section('content');;
     }

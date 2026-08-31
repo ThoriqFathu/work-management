@@ -86,45 +86,45 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-Route::get('/test-telegram-request', function () {
+// Route::get('/test-telegram-request', function () {
 
-    $message = <<<'TEXT'
-/req:ketapang
-- dashboard eksekutif | direktur
-- form bank darah | it
-- monitoring kasir | keuangan
-TEXT;
+//     $message = <<<'TEXT'
+// /req:ketapang
+// - dashboard eksekutif | direktur
+// - form bank darah | it
+// - monitoring kasir | keuangan
+// TEXT;
 
-    $telegramUser = TelegramUser::firstOrFail();
+//     $telegramUser = TelegramUser::firstOrFail();
 
-    $parser = app(TelegramRequestParser::class);
+//     $parser = app(TelegramRequestParser::class);
 
-    $parsed = $parser->parse($message);
+//     $parsed = $parser->parse($message);
 
-    $service = app(CreateWorkRequestFromTelegramService::class);
+//     $service = app(CreateWorkRequestFromTelegramService::class);
 
-    $created = $service->execute(
-        $parsed,
-        $telegramUser
-    );
+//     $created = $service->execute(
+//         $parsed,
+//         $telegramUser
+//     );
 
-    dd([
-        'parsed' => $parsed,
+//     dd([
+//         'parsed' => $parsed,
 
-        'created' => collect($created)->map(
-            fn ($workRequest) => [
-                'id' => $workRequest->id,
-                'kode' => $workRequest->kode,
-                'judul' => $workRequest->judul,
-                'unit_kerja_id' => $workRequest->unit_kerja_id,
-                'requester_unit_id' => $workRequest->requester_unit_id,
-                'status_id' => $workRequest->status_id,
-                'priority_id' => $workRequest->priority_id,
-                'created_by' => $workRequest->created_by,
-            ]
-        )->values(),
-    ]);
-});
+//         'created' => collect($created)->map(
+//             fn ($workRequest) => [
+//                 'id' => $workRequest->id,
+//                 'kode' => $workRequest->kode,
+//                 'judul' => $workRequest->judul,
+//                 'unit_kerja_id' => $workRequest->unit_kerja_id,
+//                 'requester_unit_id' => $workRequest->requester_unit_id,
+//                 'status_id' => $workRequest->status_id,
+//                 'priority_id' => $workRequest->priority_id,
+//                 'created_by' => $workRequest->created_by,
+//             ]
+//         )->values(),
+//     ]);
+// });
 
 
 require __DIR__.'/auth.php';

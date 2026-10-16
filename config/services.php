@@ -38,5 +38,9 @@ return [
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
     ],
+    'antrol' => [
+        'rsud' => env('ANTROL_RSUD_API_URL'),
+        'rsia' => env('ANTROL_RSIA_API_URL'),
+    ],
 
 ];

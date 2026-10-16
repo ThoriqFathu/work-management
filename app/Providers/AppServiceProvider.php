@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\Telegram\Commands\CreateRequestCommand;
 use App\Services\Telegram\Commands\HelpCommand;
+use App\Services\Telegram\Commands\InfoAntrolCommand;
 use App\Services\Telegram\Commands\InfoRequesterCommand;
 use App\Services\Telegram\Commands\InfoWorkSessionCommand;
 use App\Services\Telegram\Commands\RecordActivityCommand;
@@ -16,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->tag([
+            InfoAntrolCommand::class,
             InfoRequesterCommand::class,
             CreateRequestCommand::class,
             RecordActivityCommand::class,
